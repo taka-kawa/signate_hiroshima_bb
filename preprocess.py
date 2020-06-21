@@ -1,9 +1,8 @@
+import copy
 import pandas as pd
 import numpy as np
 
 from sklearn.preprocessing import LabelEncoder
-le = LabelEncoder()
-
 
 class Converter:
     def __init__(self):
@@ -87,6 +86,32 @@ class Converter:
             '出身地': '',
             '血液型': '',
         }
+        self.le = LabelEncoder()
+        self.les = {}
+        self.unknown = 99999999
+
+    def change_to_cat(self, df, jp_clmns, d_type, isTrain):
+        for jp_clmn in jp_clmns:
+            if d_type == "pitch":
+                clmn = self.pitch_columns[jp_clmn]
+            elif d_type == "player":
+                clmn = self.player_columns[jp_clmn]
+
+            if isTrain:
+                if df[clmn].dtype == 'O':
+                    self.le_ = self.le.fit(pd.concat([df[clmn], pd.Series(["self.unknown"])]))  # 未知ラベル用のラベルを追加
+                else:
+                    self.le_ = self.le.fit(pd.concat([df[clmn], pd.Series([self.unknown])]))  # 未知ラベル用のラベルを追加
+                self.les[jp_clmn] = copy.copy(self.le_)
+            
+            # 未知ラベルの処理
+            if not isTrain:
+                df[clmn] = df[clmn].map(lambda x: self.unknown if x not in self.les[jp_clmn].classes_ else x)
+                self.les[jp_clmn].classes_ = np.append(self.les[jp_clmn].classes_, self.unknown)
+
+            df["cat_"+clmn] = self.les[jp_clmn].transform(df[clmn])
+        
+        return df
 
     def preprocess_pitch(self, df_, isTrain):
         df = df_.copy()
@@ -113,28 +138,23 @@ class Converter:
             "打者守備位置",
             "捕手ID",
             ]
-        for jp_clmn in jp_clmns:
-            clmn = self.pitch_columns[jp_clmn]
-            le_ = le.fit(df[clmn])
-            df["cat_"+clmn] = le_.transform(df[clmn])
+        df = self.change_to_cat(df, jp_clmns, "pitch", isTrain)
 
         return df
 
 
-    def preprocess_player(self, df_):
+    def preprocess_player(self, df_, isTrain):
         df = df_.copy()
         df = df.rename(columns=self.player_columns)
 
         # カテゴリ変換
-        for jp_clmn in ["育成選手F", "位置", "出身国"]:
-            clmn = self.player_columns[jp_clmn]
-            le_ = le.fit(df[clmn])
-            df["cat_"+clmn] = le_.transform(df[clmn])
+        jp_clmns = ["育成選手F", "位置", "出身国"]
+        df = self.change_to_cat(df, jp_clmns, "player", isTrain)
         return df
 
     def convert_df(self, df_pitch_, df_player_, isTrain=True):
         df_pitch = self.preprocess_pitch(df_pitch_, isTrain)
-        df_player = self.preprocess_player(df_player_)
+        df_player = self.preprocess_player(df_player_, isTrain)
 
         suffix = "_batter"
         final_df = pd.merge(df_pitch, df_player.add_suffix(suffix), left_on=[self.pitch_columns["年度"], self.pitch_columns["打者ID"]], right_on=[self.player_columns["年度"]+suffix, self.player_columns["選手ID"]+suffix], how="left")
