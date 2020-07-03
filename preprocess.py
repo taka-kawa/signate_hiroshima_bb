@@ -48,14 +48,14 @@ class Converter:
             '一塁走者ID': '',
             '二塁走者ID': '',
             '三塁走者ID': '',
-            '捕手ID': '',
-            '一塁手ID': '',
-            '二塁手ID': '',
-            '三塁手ID': '',
-            '遊撃手ID': '',
-            '左翼手ID': '',
-            '中堅手ID': '',
-            '右翼手ID': '',
+            '捕手ID': 'catcher_id',
+            '一塁手ID': 'first_id',
+            '二塁手ID': 'second_id',
+            '三塁手ID': 'third_id',
+            '遊撃手ID': 'short_id',
+            '左翼手ID': 'left_id',
+            '中堅手ID': 'center_id',
+            '右翼手ID': 'right_id',
             '成績対象投手ID': '',
             '成績対象打者ID': '',
             }
@@ -159,4 +159,14 @@ class Converter:
         final_df = pd.merge(df_pitch, df_player.add_suffix(suffix), left_on=[self.pitch_columns["年度"], self.pitch_columns["打者ID"]], right_on=[self.player_columns["年度"]+suffix, self.player_columns["選手ID"]+suffix], how="left")
         suffix = "_pitcher"
         final_df = pd.merge(final_df, df_player.add_suffix(suffix), left_on=[self.pitch_columns["年度"], self.pitch_columns["投手ID"]], right_on=[self.player_columns["年度"]+suffix, self.player_columns["選手ID"]+suffix], how="left")
+        suffix = "_catcher"
+        final_df = pd.merge(final_df, df_player.add_suffix(suffix), left_on=[self.pitch_columns["年度"], self.pitch_columns["捕手ID"]], right_on=[self.player_columns["年度"]+suffix, self.player_columns["選手ID"]+suffix], how="left")
+        suffix = "_first"
+        final_df = pd.merge(final_df, df_player.add_suffix(suffix), left_on=[self.pitch_columns["年度"], self.pitch_columns["一塁手ID"]], right_on=[self.player_columns["年度"]+suffix, self.player_columns["選手ID"]+suffix], how="left")
+        suffix = "_second"
+        final_df = pd.merge(final_df, df_player.add_suffix(suffix), left_on=[self.pitch_columns["年度"], self.pitch_columns["二塁手ID"]], right_on=[self.player_columns["年度"]+suffix, self.player_columns["選手ID"]+suffix], how="left")
+        suffix = "_third"
+        final_df = pd.merge(final_df, df_player.add_suffix(suffix), left_on=[self.pitch_columns["年度"], self.pitch_columns["三塁手ID"]], right_on=[self.player_columns["年度"]+suffix, self.player_columns["選手ID"]+suffix], how="left")
+        suffix = "_short"
+        final_df = pd.merge(final_df, df_player.add_suffix(suffix), left_on=[self.pitch_columns["年度"], self.pitch_columns["遊撃手ID"]], right_on=[self.player_columns["年度"]+suffix, self.player_columns["選手ID"]+suffix], how="left")
         return final_df
