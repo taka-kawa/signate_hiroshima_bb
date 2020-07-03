@@ -48,7 +48,7 @@ class Converter:
             '一塁走者ID': '',
             '二塁走者ID': '',
             '三塁走者ID': '',
-            '捕手ID': 'catcher_id',
+            '捕手ID': '',
             '一塁手ID': '',
             '二塁手ID': '',
             '三塁手ID': '',
@@ -136,7 +136,6 @@ class Converter:
             "投手チームID",
             "打者チームID",
             "打者守備位置",
-            "捕手ID",
             ]
         df = self.change_to_cat(df, jp_clmns, "pitch", isTrain)
 
